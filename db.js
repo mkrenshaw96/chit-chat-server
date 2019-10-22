@@ -18,12 +18,13 @@ db.MESSAGE = require('./models/message')(sequelize, Sequelize);
 db.CONVO = require('./models/convo')(sequelize, Sequelize);
 
 db.USER.hasMany(db.MESSAGE);
-db.USER.belongsTo(db.CONVO);
+db.USER.hasMany(db.CONVO);
 
 db.MESSAGE.belongsTo(db.USER);
 db.MESSAGE.belongsTo(db.CONVO);
 
-db.CONVO.hasMany(db.USER);
 db.CONVO.hasMany(db.MESSAGE);
+db.CONVO.belongsTo(db.USER, { as: 'user1' });
+db.CONVO.belongsTo(db.USER, { as: 'user2' });
 
 module.exports = db;

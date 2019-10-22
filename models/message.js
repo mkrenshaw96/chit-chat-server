@@ -10,5 +10,8 @@ module.exports = (Sequelize, DataTypes) => {
 			type: DataTypes.STRING,
 			allowNull: false
 		}
+		// read: {
+		// 	type: DataTypes.BOOLEAN
+		// }
 	});
 };
