@@ -5,16 +5,21 @@ const requiresAuth = require('./permissions');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 
+const { withFilter, PubSub } = require('graphql-subscriptions');
+
+const pubsub = new PubSub();
 const NEW_MESSAGE = 'NEW_MESSAGE';
 
 module.exports = {
 	Subscription: {
 		newMessage: {
-			subscribe: async (parent, args, { pubsub }) => await pubsub.asyncIterator([NEW_MESSAGE])
+			subscribe: withFilter(
+				() => pubsub.asyncIterator([NEW_MESSAGE]),
+				(payload, { convoId }) => payload.convoId === convoId
+			)
 		}
 	},
 	Query: {
-		test: (parent, args, context) => 'This works',
 		getAllUsers: (parent, args, { db }) => db.USER.findAll(),
 		getMessagesFromConvo: async (parent, { convoId }, { db }) => {
 			try {
@@ -30,14 +35,15 @@ module.exports = {
 				};
 			}
 		},
-		getConvos: (parent, args, { db, req }) => {
+		getConvos: async (parent, args, { db, req }) => {
 			try {
-				const convos = db.CONVO.findAll({ where: { [Op.or]: [{ user2Id: req.user }, { user1Id: req.user }] } });
+				const convos = await db.USER.findOne({ where: { id: req.user } }).then(foundUser => foundUser.getConvos());
 				return {
 					ok: true,
 					convos
 				};
 			} catch (err) {
+				console.log(err);
 				return {
 					ok: false,
 					error: err.message
@@ -63,32 +69,34 @@ module.exports = {
 		loginUser: async (parent, { username, password }, { db, secret, secret2 }) => {
 			return tryLogin(username, password, db, secret, secret2);
 		},
-		createConvo: requiresAuth.createResolver(async (parent, args, { db, req }) => {
+		createConvo: async (parent, { otherUserId }, { db, req }) => {
 			try {
-				//FOR TESTING User1 is Mike, User2 is shrek
-				const convo = await db.CONVO.create({ user1Id: req.user, user2Id: '3b993e75-009e-4b0d-8061-32302d370fcb' });
+				const convo = await db.CONVO.create();
+				await convo.addUsers([req.user, otherUserId]);
 				return {
 					ok: true,
 					convo
 				};
 			} catch (err) {
+				console.log(err);
 				return {
 					ok: false,
 					error: err.message
 				};
 			}
-		}),
-		createMessage: async (parent, { text, convoId }, { db, pubsub }) => {
+		},
+		createMessage: async (parent, { text, convoId }, { db, req }) => {
 			try {
-				const message = await db.USER.findOne({ where: { id: 'c93d4ae4-91f4-4e37-b892-48b5c4721cda' } }).then(foundUser =>
+				const message = await db.USER.findOne({ where: { id: req.user } }).then(foundUser =>
 					foundUser.createMessage({ text, convoId })
 				);
-				await pubsub.publish(NEW_MESSAGE, { newMessage: message });
+				await pubsub.publish(NEW_MESSAGE, { convoId, newMessage: message });
 				return {
 					ok: true,
 					message
 				};
 			} catch (err) {
+				console.log(err);
 				return {
 					ok: false,
 					error: err.message

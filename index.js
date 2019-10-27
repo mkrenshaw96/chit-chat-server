@@ -12,12 +12,10 @@ const secret = process.env.JWT_SECRET;
 const secret2 = process.env.JWT_SECRET2;
 
 //Apollo
-const { ApolloServer, PubSub } = require('apollo-server-express');
-const { makeExecutableSchema } = require('graphql-tools');
+const { ApolloServer } = require('apollo-server-express');
 const addUser = require('./addUser');
 const typeDefs = require('./typeDefs');
 const resolvers = require('./resolvers');
-const pubsub = new PubSub();
 
 const server = new ApolloServer({
 	typeDefs,
@@ -28,9 +26,26 @@ const server = new ApolloServer({
 			res,
 			db,
 			secret,
-			secret2,
-			pubsub
+			secret2
 		};
+	},
+	subscriptions: {
+		onConnect: async ({ token, refreshToken }, webSocket) => {
+			console.log('💥💥💥 WEBSOCKET CONNECTED 💥💥💥');
+			if (token && refreshToken) {
+				try {
+					const { user } = jwt.verify(token, secret);
+					return { db, user };
+				} catch (err) {
+					const newTokens = await refreshTokens(token, refreshToken, db, secret, secret2);
+					return { db, user: newTokens.user };
+				}
+			}
+			return { db };
+		},
+		onDisconnect: (webSocket, context) => {
+			console.log('Disconnected.');
+		}
 	}
 });
 
@@ -43,7 +58,6 @@ server.applyMiddleware({ app });
 const httpServer = http.createServer(app);
 server.installSubscriptionHandlers(httpServer);
 
-httpServer.listen(process.env.PORT, () => {
-	console.log(`🚀 Server ready at http://localhost:${process.env.PORT}${server.graphqlPath}`);
-	console.log(`🚀 Subscriptions ready at ws://localhost:${process.env.PORT}${server.subscriptionsPath}`);
-});
+httpServer.listen(process.env.PORT, () =>
+	console.log(`🚀🚀🚀 Server ready at http://localhost:${process.env.PORT}${server.graphqlPath} 🚀🚀🚀`)
+);

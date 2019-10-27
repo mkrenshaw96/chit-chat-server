@@ -1,7 +1,6 @@
 const { gql } = require('apollo-server-express');
 module.exports = gql`
 	type Query {
-		test: String!
 		getAllUsers: [User!]!
 		getMessagesFromConvo(convoId: ID!): ChatMessagesResponse!
 		getConvos: ConvosResponse!
@@ -11,7 +10,7 @@ module.exports = gql`
 		createUser(name: String!, email: String!, password: String!, username: String!): UserResponse!
 		loginUser(username: String!, password: String!): LoginResponse!
 		# Convo
-		createConvo: CreateConvoResponse!
+		createConvo(otherUserId: String!): CreateConvoResponse!
 		createMessage(convoId: ID!, text: String!): CreateMessageResponse!
 	}
 	# Users
@@ -39,11 +38,6 @@ module.exports = gql`
 	}
 	type Convo {
 		id: ID!
-		name: String
-		creator: String
-		user1Id: ID!
-		user2Id: ID!
-		userId: ID
 		updatedAt: String!
 		createdAt: String!
 	}
@@ -75,8 +69,11 @@ module.exports = gql`
 		convos: [Convo!]!
 		errors: [Error!]
 	}
-
+	type Member {
+		userId: String!
+		convoId: String!
+	}
 	type Subscription {
-		newMessage: Message!
+		newMessage(convoId: String!): Message!
 	}
 `;
