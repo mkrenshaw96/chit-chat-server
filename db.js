@@ -1,7 +1,8 @@
 const Sequelize = require('sequelize');
-const sequelize = new Sequelize(process.env.NAME, 'postgres', process.env.PASS, {
-	dialect: 'postgres',
-	host: 'localhost'
+const sequelize = new Sequelize(process.env.HEROKU_URI, {
+	dialectOptions: {
+		ssl: true
+	}
 });
 
 sequelize
@@ -12,18 +13,6 @@ sequelize
 const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
-
-//OLD CODE
-
-// db.USER.hasMany(db.MESSAGE);
-// db.USER.hasMany(db.CONVO);
-// db.MESSAGE.belongsTo(db.USER);
-// db.MESSAGE.belongsTo(db.CONVO);
-// db.CONVO.hasMany(db.MESSAGE);
-// db.CONVO.belongsTo(db.USER, { as: 'user1' });
-// db.CONVO.belongsTo(db.USER, { as: 'user2' });
-
-//OLD CODE
 
 db.USER = require('./models/user')(sequelize, Sequelize);
 db.MESSAGE = require('./models/message')(sequelize, Sequelize);

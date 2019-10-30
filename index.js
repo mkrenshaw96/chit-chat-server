@@ -1,17 +1,17 @@
 require('dotenv').config();
 
-//Express
+// Express
 const express = require('express');
 const app = express();
 const db = require('./db');
 db.sequelize.sync();
 
-//Variable Declarations
+// Variable Declarations
 const http = require('http');
 const secret = process.env.JWT_SECRET;
 const secret2 = process.env.JWT_SECRET2;
 
-//Apollo
+// Apollo
 const { ApolloServer } = require('apollo-server-express');
 const addUser = require('./addUser');
 const typeDefs = require('./typeDefs');
