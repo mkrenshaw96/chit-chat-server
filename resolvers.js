@@ -92,7 +92,7 @@ module.exports = {
 			const MICHAEl = '13bcb7d2-c7f5-4ece-936c-94e8500cfd83';
 			const JAMES = '95db8ff7-c720-4904-aea3-8bd33db41431';
 			try {
-				const message = await db.USER.findOne({ where: { id: MICHAEl } }).then(foundUser =>
+				const message = await db.USER.findOne({ where: { id: req.user } }).then(foundUser =>
 					foundUser.createMessage({ text, convoId })
 				);
 				await pubsub.publish(NEW_MESSAGE, { convoId, newMessage: { ok: true, message } });
