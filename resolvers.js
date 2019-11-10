@@ -37,7 +37,9 @@ module.exports = {
 		},
 		getConvos: async (parent, args, { db, req }) => {
 			try {
-				const convos = await db.USER.findOne({ where: { id: req.user } }).then(foundUser => foundUser.getConvos());
+				const convos = await db.USER.findOne({ where: { id: req.user } }).then(foundUser =>
+					foundUser.getConvos()
+				);
 				return {
 					ok: true,
 					convos
@@ -86,11 +88,14 @@ module.exports = {
 			}
 		},
 		createMessage: async (parent, { text, convoId }, { db, req }) => {
+			// for testing
+			const MICHAEl = '13bcb7d2-c7f5-4ece-936c-94e8500cfd83';
+			const JAMES = '95db8ff7-c720-4904-aea3-8bd33db41431';
 			try {
-				const message = await db.USER.findOne({ where: { id: req.user } }).then(foundUser =>
+				const message = await db.USER.findOne({ where: { id: MICHAEl } }).then(foundUser =>
 					foundUser.createMessage({ text, convoId })
 				);
-				await pubsub.publish(NEW_MESSAGE, { convoId, newMessage: message });
+				await pubsub.publish(NEW_MESSAGE, { convoId, newMessage: { ok: true, message } });
 				return {
 					ok: true,
 					message
@@ -103,5 +108,13 @@ module.exports = {
 				};
 			}
 		}
+		// deleteAllMessagesFromConvo: async (_, { convoId }, { db }) => {
+		// 	try {
+		// 		return await db.MESSAGE.destroy({ where: { convoId } }).then(() => true);
+		// 	} catch (err) {
+		// 		console.log(err);
+		// 		return false;
+		// 	}
+		// }
 	}
 };

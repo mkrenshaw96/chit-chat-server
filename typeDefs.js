@@ -12,6 +12,7 @@ module.exports = gql`
 		# Convo
 		createConvo(otherUserId: String!): CreateConvoResponse!
 		createMessage(convoId: ID!, text: String!): CreateMessageResponse!
+		deleteAllMessagesFromConvo(convoId: ID): String!
 	}
 	# Users
 	type User {
@@ -74,6 +75,6 @@ module.exports = gql`
 		convoId: String!
 	}
 	type Subscription {
-		newMessage(convoId: String!): Message!
+		newMessage(convoId: String!): CreateMessageResponse!
 	}
 `;
