@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "apollo-link-ws": "^1.0.19",
-    "apollo-server": "^2.9.6",
+    "apollo-server": "^2.14.2",
     "apollo-server-express": "^2.9.5",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
